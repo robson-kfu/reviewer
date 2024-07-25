@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: revisor-api
+  cloud:
+    function:
+      definition: requestContext;requestIaRevision;returnComments
+    stream:
+      bindings:
+        requestMergeRevision-out-0:
+          destination: revision-requested-topic
+        requestContext-in-0:
+          destination: revision-requested-topic
+        requestContext-out-0:
+          destination: context-retrieved-topic
+        requestIaRevision-in-0:
+          destination: context-retrieved-topic
+        requestIaRevision-out-0:
+          destination: comments-generated-topic
+        returnComments-in-0:
+          destination: comments-generated-topic
+        returnComments-out-0:
+          destination: process-feedback-topic
+  rabbit:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  show-actuator: true
