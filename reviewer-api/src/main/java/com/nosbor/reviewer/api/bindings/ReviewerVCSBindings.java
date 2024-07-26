@@ -23,6 +23,7 @@ public class ReviewerVCSBindings {
             context.setPathUrl("file.md");
             // Recuperar contexto do MR
             context.setContext("Escreva um hello word in Clojure");
+            context.setPullRequestId(mergeRevision.getPayload().getPullRequestId());
 
             log.info("Reposta do sistema de versionamento {}", context);
             return MessageBuilder.withPayload(context).copyHeaders(mergeRevision.getHeaders()).build();
@@ -44,6 +45,7 @@ public class ReviewerVCSBindings {
             log.info("Comentários realizados!");
             return MessageBuilder.withPayload(
                             ProcessStatusTO.builder()
+                                    .pullRequestId(iaResponse.getPayload().getPullRequestId())
                                     .message("Processo finalizado!")
                                     .status(StatusEnum.FINALIZADO)
                                     .createdAt(LocalDate.now())

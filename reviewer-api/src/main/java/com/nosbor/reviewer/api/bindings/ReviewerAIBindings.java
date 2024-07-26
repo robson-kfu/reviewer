@@ -23,6 +23,7 @@ public class ReviewerAIBindings {
             iaResponse.setContext("contexto");
             // Recuperar contexto do MR
             iaResponse.setResponse(List.of("Um bom comentário"));
+            iaResponse.setPullRequestId(pullRequestContext.getPayload().getPullRequestId());
 
             log.info("Reposta da IA {}", iaResponse);
             return MessageBuilder.withPayload(iaResponse).copyHeaders(pullRequestContext.getHeaders()).build();

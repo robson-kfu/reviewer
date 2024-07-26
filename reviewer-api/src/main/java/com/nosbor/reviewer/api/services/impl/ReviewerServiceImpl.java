@@ -24,7 +24,7 @@ public class ReviewerServiceImpl implements IReviewerService {
     @Override
     public ProcessStatusTO requestRevision(RequestRevisionTO requestRevisionTO) {
         log.info("Processando solicitação de revisão do MR id {} do " +
-                        "sistema de versão {} com a IA {}", requestRevisionTO.getIdMergeRequest(),
+                        "sistema de versão {} com a IA {}", requestRevisionTO.getPullRequestId(),
                 requestRevisionTO.getVcs(), requestRevisionTO.getAiRevisor());
 
         boolean sent = streamBridge.send(REQUEST_MERGE_REVISION_OUT_0, requestRevisionTO);
@@ -32,6 +32,7 @@ public class ReviewerServiceImpl implements IReviewerService {
         if (sent) {
             log.info("Revisão colocada na pipeline de execução");
             return ProcessStatusTO.builder()
+                    .pullRequestId(requestRevisionTO.getPullRequestId())
                     .status(StatusEnum.INICIADO)
                     .message("Processo de revisão iniciado.")
                     .createdAt(LocalDate.now())

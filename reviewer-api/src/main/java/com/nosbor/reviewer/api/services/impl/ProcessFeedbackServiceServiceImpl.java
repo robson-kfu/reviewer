@@ -6,7 +6,6 @@ import com.nosbor.reviewer.api.models.ProcessStatusTO;
 import com.nosbor.reviewer.api.repos.IProcessStatusRepository;
 import com.nosbor.reviewer.api.repos.entities.ProcessStatusEntity;
 import com.nosbor.reviewer.api.services.IProcessFeedbackService;
-import jakarta.persistence.Entity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Example;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -43,11 +41,15 @@ public class ProcessFeedbackServiceServiceImpl implements IProcessFeedbackServic
     @Bean
     Consumer<Message<ProcessStatusTO>> processFeedback(){
         return processStatusTOMessage -> {
+            log.info("Processando feedback do processo {}.",
+                    processStatusTOMessage
+                            .getHeaders()
+                            .getOrDefault("x-etapa-do-processo", "etapa não informada"));
             ProcessStatusTO processStatusTO = processStatusTOMessage.getPayload();
-            log.info("Processando feedback do processo {}. payload {}",
-                    processStatusTOMessage.getHeaders().getOrDefault("x-stapa-do-processo", "etapa não informada"),
-                    processStatusTO);
-            processStatusRepository.save(objectMapper.convertValue(processStatusTO, ProcessStatusEntity.class));
+            log.info("convertido {}", processStatusTO);
+            ProcessStatusEntity saved =
+                    processStatusRepository.save(objectMapper.convertValue(processStatusTO, ProcessStatusEntity.class));
+            log.info("Status salvo {}", saved);
         };
     }
 }

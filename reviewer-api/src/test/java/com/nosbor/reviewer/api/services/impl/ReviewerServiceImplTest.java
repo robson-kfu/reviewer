@@ -31,7 +31,7 @@ class ReviewerServiceImplTest {
     @Test
     void testRequestRevision_Success() {
         RequestRevisionTO request = new RequestRevisionTO();
-        request.setIdMergeRequest("123");
+        request.setPullRequestId("123");
         request.setVcs(VCSAvailableServicesEnum.GITHUB);
         request.setAiRevisor(AIAvailableServicesEnum.OLLAMA);
 
@@ -47,7 +47,7 @@ class ReviewerServiceImplTest {
     @Test
     void testRequestRevision_Failure() {
         RequestRevisionTO request = new RequestRevisionTO();
-        request.setIdMergeRequest("123");
+        request.setPullRequestId("123");
         request.setVcs(VCSAvailableServicesEnum.GITHUB);
         request.setAiRevisor(AIAvailableServicesEnum.OLLAMA);
 

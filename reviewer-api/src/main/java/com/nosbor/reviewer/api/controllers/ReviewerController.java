@@ -3,6 +3,7 @@ package com.nosbor.reviewer.api.controllers;
 import com.nosbor.reviewer.api.models.ProcessStatusTO;
 import com.nosbor.reviewer.api.models.RequestRevisionTO;
 import com.nosbor.reviewer.api.services.IReviewerService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,7 +24,7 @@ public class ReviewerController {
     }
 
     @PostMapping
-    ResponseEntity<ProcessStatusTO> start(@RequestBody @NotNull RequestRevisionTO requestRevisionTO) {
+    ResponseEntity<ProcessStatusTO> start(@RequestBody @NotNull @Valid RequestRevisionTO requestRevisionTO) {
         return new ResponseEntity<>(reviewerService.requestRevision(requestRevisionTO), ACCEPTED);
     }
 }

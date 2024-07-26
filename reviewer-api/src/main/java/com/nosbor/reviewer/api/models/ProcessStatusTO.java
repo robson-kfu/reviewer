@@ -1,17 +1,18 @@
 package com.nosbor.reviewer.api.models;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProcessStatusTO {
 
+    @NotNull
+    private String pullRequestId;
     @NotNull
     private StatusEnum status;
     @NotNull
