@@ -17,7 +17,7 @@ public class ReviewerVCSBindings {
     @Bean
     Function<Message<RequestRevisionTO>, Message<PullRequestContextTO>> requestContext() {
         return mergeRevision -> {
-            log.info("Processando requisição de revisão de MR {}", mergeRevision.getPayload());
+            log.info("Processando requisição de revisão de PR {}", mergeRevision.getPayload());
             // Recuperar Diff do MR
             PullRequestContextTO context = new PullRequestContextTO();
             context.setPathUrl("file.md");
@@ -32,7 +32,7 @@ public class ReviewerVCSBindings {
     @Bean
     Function<Message<IAResponseTO>, Message<ProcessStatusTO>> returnComments() {
         return iaResponse -> {
-            log.info("Processando revisão da IA {}", iaResponse);
+            log.info("Preparando envio dos comentários da IA para o VSC.");
             // monta comentários com base na revisão da IA
 //            CommentTO comment = new CommentTO();
 //            comment.setLine(1);
