@@ -1,7 +1,10 @@
 package com.nosbor.reviewer.api.bindings;
 
 import com.nosbor.reviewer.api.models.*;
+import com.nosbor.reviewer.api.services.IVSCService;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -14,16 +17,26 @@ import java.util.function.Function;
 @Slf4j
 public class ReviewerVCSBindings {
 
+    private final ApplicationContext applicationContext;
+
+    public ReviewerVCSBindings(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
     @Bean
     Function<Message<RequestRevisionTO>, Message<PullRequestContextTO>> requestContext() {
         return mergeRevision -> {
-            log.info("Processando requisição de revisão de PR {}", mergeRevision.getPayload());
-            // Recuperar Diff do MR
+            log.info("Processando requisição de revisão de PR {}", mergeRevision);
+            RequestRevisionTO requestRevision = mergeRevision.getPayload();
+
+            IVSCService ivscService = getIvscService(requestRevision);
+
+            String pullRequestId = requestRevision.getPullRequestId();
+
             PullRequestContextTO context = new PullRequestContextTO();
-            context.setPathUrl("file.md");
-            // Recuperar contexto do MR
-            context.setContext("Escreva um hello word in Clojure");
-            context.setPullRequestId(mergeRevision.getPayload().getPullRequestId());
+            context.setDiff(ivscService.getPullRequestDiff(pullRequestId));
+            context.setContext(ivscService.getPullRequestContext(pullRequestId));
+            context.setPullRequestId(pullRequestId);
 
             log.info("Reposta do sistema de versionamento {}", context);
             return MessageBuilder.withPayload(context).copyHeaders(mergeRevision.getHeaders()).build();
@@ -53,5 +66,9 @@ public class ReviewerVCSBindings {
                     )
                     .copyHeaders(iaResponse.getHeaders()).build();
         };
+    }
+
+    private @NotNull IVSCService getIvscService(RequestRevisionTO requestRevision) {
+        return applicationContext.getBean(requestRevision.getVcs().getService());
     }
 }

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class PullRequestContextTO {
-    private String pathUrl;
+    private String diff;
     private String context;
     @NotNull
     private String pullRequestId;
