@@ -1,9 +1,22 @@
 spring:
   application:
     name: revisor-api
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: passwd
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      path: /h2-console
+      enabled: true
   cloud:
     function:
-      definition: requestContext;requestIaRevision;returnComments
+      definition: requestContext;requestIaRevision;returnComments;processFeedback
     stream:
       bindings:
         requestMergeRevision-out-0:
@@ -19,6 +32,8 @@ spring:
         returnComments-in-0:
           destination: comments-generated-topic
         returnComments-out-0:
+          destination: process-feedback-topic
+        processFeedback-in-0:
           destination: process-feedback-topic
   rabbit:
     host: localhost
