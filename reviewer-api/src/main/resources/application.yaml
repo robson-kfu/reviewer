@@ -49,3 +49,23 @@ management:
 
 springdoc:
   show-actuator: true
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        web:
+          reactive:
+            function:
+              client: DEBUG
+
+vcs:
+  services:
+    github:
+#      TODO - fazer o webClient seguir um redirect (302) do https://github.com
+      baseUrl: "https://patch-diff.githubusercontent.com"
+      apiBaseUrl: "https://api.github.com"
+      apiVersion: "2022-11-28"
+      appId: ${APP_ID}
+      installationId: ${INSTALLATION_ID}
+      pemPath: ${PEM_PATH}

@@ -30,12 +30,18 @@ public class ReviewerVCSBindings {
             RequestRevisionTO requestRevision = mergeRevision.getPayload();
 
             IVSCService ivscService = getIvscService(requestRevision);
-
+            ivscService.validate();
             String pullRequestId = requestRevision.getPullRequestId();
 
             PullRequestContextTO context = new PullRequestContextTO();
-            context.setDiff(ivscService.getPullRequestDiff(pullRequestId));
-            context.setContext(ivscService.getPullRequestContext(pullRequestId));
+            try {
+                context.setDiff(ivscService.getPullRequestDiff(requestRevision));
+            } catch (Exception e) {
+                log.error("Erro buscando diff {}", e.getMessage());
+                //Write in feed back process
+                throw new RuntimeException(e);
+            }
+            context.setContext(ivscService.getPullRequestContext(requestRevision));
             context.setPullRequestId(pullRequestId);
 
             log.info("Reposta do sistema de versionamento {}", context);
