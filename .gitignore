@@ -35,3 +35,4 @@ build/
 
 ### secrets
 *.pem
+/.env
