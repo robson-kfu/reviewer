@@ -1,7 +1,11 @@
 package com.nosbor.reviewer.api.services;
 
-public interface IVSCService {
-    String getPullRequestDiff(final String pullRequestId);
+import com.nosbor.reviewer.api.models.RequestRevisionTO;
 
-    String getPullRequestContext(final String pullRequestId);
+public interface IVSCService {
+    String getPullRequestDiff(final RequestRevisionTO requestRevisionTO) throws Exception;
+
+    String getPullRequestContext(final RequestRevisionTO requestRevisionTO);
+
+    void validate();
 }

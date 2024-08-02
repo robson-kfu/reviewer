@@ -14,4 +14,8 @@ public class RequestRevisionTO {
     private String pullRequestId;
     @NotNull
     private AIAvailableServicesEnum aiRevisor;
+    @NotNull
+    private String owner;
+    @NotNull
+    private String repoName;
 }
