@@ -38,7 +38,7 @@ public class ReviewerVCSBindings {
                 context.setDiff(ivscService.getPullRequestDiff(requestRevision));
             } catch (Exception e) {
                 log.error("Erro buscando diff {}", e.getMessage());
-                //Write in feed back process
+                //TODO - Escrever no topico de feedback?
                 throw new RuntimeException(e);
             }
             context.setContext(ivscService.getPullRequestContext(requestRevision));

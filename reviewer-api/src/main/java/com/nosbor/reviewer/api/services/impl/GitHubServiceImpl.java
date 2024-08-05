@@ -82,13 +82,8 @@ public class GitHubServiceImpl implements IVSCService {
                 .block();
         Objects.requireNonNull(rawResponse);
         String diff = new String(rawResponse);
-        log.info("Diff encontrado: {}", diff);
+        log.info("Diff encontrado. Tamanho do diff {}", diff.length());
         return diff;
-    }
-
-    @Override
-    public String getPullRequestContext(RequestRevisionTO requestRevisionTO) {
-        return "implementar";
     }
 
     @Override
