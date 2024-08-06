@@ -51,7 +51,7 @@ springdoc:
   show-actuator: true
 logging:
   level:
-    root: INFO
+    root: DEBUG
     org:
       springframework:
         web:
@@ -63,9 +63,14 @@ vcs:
   services:
     github:
 #      TODO - fazer o webClient seguir um redirect (302) do https://github.com
-      baseUrl: "https://patch-diff.githubusercontent.com"
-      apiBaseUrl: "https://api.github.com"
-      apiVersion: "2022-11-28"
+      baseUrl: ${GIT_HUB_BASE_URL:https://patch-diff.githubusercontent.com}
+      apiBaseUrl:  ${GIT_HUB_API_BASE_URL:https://api.github.com}
+      apiVersion:  ${GIT_HUB_API_VERSION:2022-11-28}
       appId: ${APP_ID}
       installationId: ${INSTALLATION_ID}
       pemPath: ${PEM_PATH}
+
+ai:
+  services:
+    ollama:
+      baseUrl: ${OLLAMA_BASE_URL:http://localhost:11434}

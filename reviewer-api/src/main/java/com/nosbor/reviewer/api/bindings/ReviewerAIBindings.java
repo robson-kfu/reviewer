@@ -15,14 +15,12 @@ import java.util.function.Function;
 public class ReviewerAIBindings {
 
     @Bean
-    Function<Message<PullRequestContextTO>, Message<IAResponseTO>> requestIaRevision() {
+    Function<Message<PullRequestContextTO>, Message<AIResponseTO>> requestIaRevision() {
         return pullRequestContext -> {
             log.info("Requisitando analise da IA para o PR {}", pullRequestContext.getPayload());
             // Recuperar Diff do MR
-            IAResponseTO iaResponse = new IAResponseTO();
-            iaResponse.setContext("contexto");
-            // Recuperar contexto do MR
-            iaResponse.setResponse(List.of("Um bom comentário"));
+            AIResponseTO iaResponse = new AIResponseTO();
+
             iaResponse.setPullRequestId(pullRequestContext.getPayload().getPullRequestId());
 
             log.info("Reposta da IA {}", iaResponse);

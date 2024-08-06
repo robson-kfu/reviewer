@@ -1,11 +1,11 @@
 package com.nosbor.reviewer.api.services.impl;
 
 import com.nosbor.reviewer.api.clients.github.models.GitHubTokenTO;
+import com.nosbor.reviewer.api.helpers.ValidationHelper;
 import com.nosbor.reviewer.api.models.RequestRevisionTO;
 import com.nosbor.reviewer.api.services.IVSCService;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,18 +18,24 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static com.nosbor.reviewer.api.models.VCSAvailableServicesEnum.GITHUB;
 
 @Service
 @Slf4j
 public class GitHubServiceImpl implements IVSCService {
 
     private static final long EXPIRATION_TIME = 600_000; // 10 minutes
-    public static final String A_PROPRIEDADE_S_DEVE_SER_INFORMADA_AO_USAR_O_GITHUB = "A propriedade %s deve ser informada ao usar o GITHUB!";
     public static final String BEARER_S = "Bearer %s";
+    public static final String VCS_SERVICES_GITHUB_INSTALLATION_ID = "vcs.services.github.installationId";
+    public static final String VCS_SERVICES_GITHUB_BASE_URL = "vcs.services.github.baseUrl";
+    public static final String VCS_SERVICES_GITHUB_API_BASE_URL = "vcs.services.github.apiBaseUrl";
+    public static final String VCS_SERVICES_GITHUB_API_VERSION = "vcs.services.github.apiVersion";
+    public static final String VCS_SERVICES_GITHUB_APP_ID = "vcs.services.github.appId";
+    public static final String VCS_SERVICES_GITHUB_PEM_PATH = "vcs.services.github.pemPath";
 
     private GitHubTokenTO gitHubTokenTO;
 
@@ -43,12 +49,12 @@ public class GitHubServiceImpl implements IVSCService {
     private final WebClient baseClient;
     private final WebClient apiClient;
 
-    public GitHubServiceImpl(@Value("${vcs.services.github.installationId:}") String installationId,
-                             @Value("${vcs.services.github.appId:}") String appId,
-                             @Value("${vcs.services.github.pemPath:}") String pemPath,
-                             @Value("${vcs.services.github.baseUrl:}") String baseUrl,
-                             @Value("${vcs.services.github.apiBaseUrl:}") String apiBaseUrl,
-                             @Value("${vcs.services.github.apiVersion:}") String apiVersion) {
+    public GitHubServiceImpl(@Value("${" + VCS_SERVICES_GITHUB_INSTALLATION_ID + ":}") String installationId,
+                             @Value("${" + VCS_SERVICES_GITHUB_APP_ID + ":}") String appId,
+                             @Value("${" + VCS_SERVICES_GITHUB_PEM_PATH + ":}") String pemPath,
+                             @Value("${" + VCS_SERVICES_GITHUB_BASE_URL + ":}") String baseUrl,
+                             @Value("${" + VCS_SERVICES_GITHUB_API_BASE_URL + ":}") String apiBaseUrl,
+                             @Value("${" + VCS_SERVICES_GITHUB_API_VERSION + ":}") String apiVersion) {
         this.installationId = installationId;
         this.appId = appId;
         this.pemPath = pemPath;
@@ -88,24 +94,16 @@ public class GitHubServiceImpl implements IVSCService {
 
     @Override
     public void validate() {
-        List<String> errorsMsg = new ArrayList<>();
-
-        validateProperty(this.installationId, "vcs.services.github.installationId", errorsMsg);
-        validateProperty(this.baseUrl, "vcs.services.github.baseUrl", errorsMsg);
-        validateProperty(this.apiBaseUrl, "vcs.services.github.apiBaseUrl", errorsMsg);
-        validateProperty(this.apiVersion, "vcs.services.github.apiVersion", errorsMsg);
-        validateProperty(this.appId, "vcs.services.github.appId", errorsMsg);
-        validateProperty(this.pemPath, "vcs.services.github.pemPath", errorsMsg);
-
-        if (!errorsMsg.isEmpty()) {
-            throw new RuntimeException(errorsMsg.toString());
-        }
-    }
-
-    private void validateProperty(String property, String propertyName, List<String> errorsMsg) {
-        if (Strings.isBlank(property)) {
-            errorsMsg.add(String.format(A_PROPRIEDADE_S_DEVE_SER_INFORMADA_AO_USAR_O_GITHUB, propertyName));
-        }
+        log.info("Validando as configurações do git hub");
+        ValidationHelper.validate(Map.of(
+                this.installationId, VCS_SERVICES_GITHUB_INSTALLATION_ID,
+                this.baseUrl, VCS_SERVICES_GITHUB_BASE_URL,
+                this.apiBaseUrl, VCS_SERVICES_GITHUB_API_BASE_URL,
+                this.apiVersion, VCS_SERVICES_GITHUB_API_VERSION,
+                this.appId, VCS_SERVICES_GITHUB_APP_ID,
+                this.pemPath, VCS_SERVICES_GITHUB_PEM_PATH
+        ), GITHUB.toString());
+        log.info("Configurações do git hub estão OK!");
     }
 
     private static PrivateKey getPrivateKey(String filename) throws Exception {

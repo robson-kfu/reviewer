@@ -44,13 +44,13 @@ public class ReviewerVCSBindings {
             context.setContext(ivscService.getPullRequestContext(requestRevision));
             context.setPullRequestId(pullRequestId);
 
-            log.info("Reposta do sistema de versionamento {}", context);
+            log.info("Finalizando recuperação dos diffs.");
             return MessageBuilder.withPayload(context).copyHeaders(mergeRevision.getHeaders()).build();
         };
     }
 
     @Bean
-    Function<Message<IAResponseTO>, Message<ProcessStatusTO>> returnComments() {
+    Function<Message<AIResponseTO>, Message<ProcessStatusTO>> returnComments() {
         return iaResponse -> {
             log.info("Preparando envio dos comentários da IA para o VSC.");
             // monta comentários com base na revisão da IA

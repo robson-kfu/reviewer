@@ -26,11 +26,12 @@ public class ReviewerServiceImpl implements IReviewerService {
         log.info("Processando solicitação de revisão do MR id {} do " +
                         "sistema de versão {} com a IA {}", requestRevisionTO.getPullRequestId(),
                 requestRevisionTO.getVcs(), requestRevisionTO.getAiRevisor());
-
+        //TODO - Não permitir executar uma analise para um PR id que está sendo processado
         boolean sent = streamBridge.send(REQUEST_MERGE_REVISION_OUT_0, requestRevisionTO);
 
         if (sent) {
             log.info("Revisão colocada na pipeline de execução");
+            // TODO - escrever no topico de feedback layer?
             return ProcessStatusTO.builder()
                     .pullRequestId(requestRevisionTO.getPullRequestId())
                     .status(StatusEnum.INICIADO)

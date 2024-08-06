@@ -8,9 +8,8 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-public class IAResponseTO {
-    private String context;
-    private List<String> response;
+public class AIResponseWrapper {
     @NotNull
     private String pullRequestId;
+    List<AIResponseTO> aiResponseTOList;
 }
