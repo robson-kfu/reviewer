@@ -51,7 +51,7 @@ springdoc:
   show-actuator: true
 logging:
   level:
-    root: INFO
+    root: DEBUG
     org:
       springframework:
         web:
@@ -73,4 +73,4 @@ vcs:
 ai:
   services:
     ollama:
-      baseUrl: ${OLLAMA_BASE_URL:http://localhost:11434}
+      baseUrl: ${OLLAMA_BASE_URL:http://localhost:11434/api}

@@ -34,6 +34,7 @@ public class ReviewerVCSBindings {
             String pullRequestId = requestRevision.getPullRequestId();
 
             PullRequestContextTO context = new PullRequestContextTO();
+            context.setAiAvailableServicesEnum(requestRevision.getAiRevisor());
             try {
                 context.setDiff(ivscService.getPullRequestDiff(requestRevision));
             } catch (Exception e) {
@@ -50,8 +51,8 @@ public class ReviewerVCSBindings {
     }
 
     @Bean
-    Function<Message<AIResponseTO>, Message<ProcessStatusTO>> returnComments() {
-        return iaResponse -> {
+    Function<Message<AIResponseWrapper>, Message<ProcessStatusTO>> returnComments() {
+        return aiResponseWrapperMessage -> {
             log.info("Preparando envio dos comentários da IA para o VSC.");
             // monta comentários com base na revisão da IA
 //            CommentTO comment = new CommentTO();
@@ -64,13 +65,13 @@ public class ReviewerVCSBindings {
             log.info("Comentários realizados!");
             return MessageBuilder.withPayload(
                             ProcessStatusTO.builder()
-                                    .pullRequestId(iaResponse.getPayload().getPullRequestId())
+                                    .pullRequestId(aiResponseWrapperMessage.getPayload().getPullRequestId())
                                     .message("Processo finalizado!")
                                     .status(StatusEnum.FINALIZADO)
                                     .createdAt(LocalDate.now())
                                     .build()
                     )
-                    .copyHeaders(iaResponse.getHeaders()).build();
+                    .copyHeaders(aiResponseWrapperMessage.getHeaders()).build();
         };
     }
 

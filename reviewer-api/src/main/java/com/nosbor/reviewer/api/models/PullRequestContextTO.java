@@ -11,4 +11,6 @@ public class PullRequestContextTO {
     private String context;
     @NotNull
     private String pullRequestId;
+    @NotNull
+    private AIAvailableServicesEnum aiAvailableServicesEnum;
 }

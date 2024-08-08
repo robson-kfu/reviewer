@@ -11,5 +11,5 @@ import java.util.List;
 public class AIResponseWrapper {
     @NotNull
     private String pullRequestId;
-    List<AIResponseTO> aiResponseTOList;
+    List<CommentsTO> comments;
 }
