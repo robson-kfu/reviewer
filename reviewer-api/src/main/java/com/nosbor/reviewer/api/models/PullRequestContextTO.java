@@ -1,16 +1,13 @@
 package com.nosbor.reviewer.api.models;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-public class PullRequestContextTO {
+public class PullRequestContextTO extends RequestRevisionTO {
     private String diff;
     private String context;
-    @NotNull
-    private String pullRequestId;
-    @NotNull
-    private AIAvailableServicesEnum aiAvailableServicesEnum;
 }

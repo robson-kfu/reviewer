@@ -1,5 +1,6 @@
 package com.nosbor.reviewer.api.bindings;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nosbor.reviewer.api.models.*;
 import com.nosbor.reviewer.api.services.IVSCService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +19,11 @@ import java.util.function.Function;
 public class ReviewerVCSBindings {
 
     private final ApplicationContext applicationContext;
+    private final ObjectMapper objectMapper;
 
-    public ReviewerVCSBindings(ApplicationContext applicationContext) {
+    public ReviewerVCSBindings(ApplicationContext applicationContext, ObjectMapper objectMapper) {
         this.applicationContext = applicationContext;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -28,13 +31,9 @@ public class ReviewerVCSBindings {
         return mergeRevision -> {
             log.info("Processando requisição de revisão de PR {}", mergeRevision);
             RequestRevisionTO requestRevision = mergeRevision.getPayload();
+            IVSCService ivscService = getIvscService(requestRevision.getVcs());
+            PullRequestContextTO context = objectMapper.convertValue(requestRevision, PullRequestContextTO.class);
 
-            IVSCService ivscService = getIvscService(requestRevision);
-            ivscService.validate();
-            String pullRequestId = requestRevision.getPullRequestId();
-
-            PullRequestContextTO context = new PullRequestContextTO();
-            context.setAiAvailableServicesEnum(requestRevision.getAiRevisor());
             try {
                 context.setDiff(ivscService.getPullRequestDiff(requestRevision));
             } catch (Exception e) {
@@ -43,8 +42,6 @@ public class ReviewerVCSBindings {
                 throw new RuntimeException(e);
             }
             context.setContext(ivscService.getPullRequestContext(requestRevision));
-            context.setPullRequestId(pullRequestId);
-
             log.info("Finalizando recuperação dos diffs.");
             return MessageBuilder.withPayload(context).copyHeaders(mergeRevision.getHeaders()).build();
         };
@@ -54,15 +51,11 @@ public class ReviewerVCSBindings {
     Function<Message<AIResponseWrapper>, Message<ProcessStatusTO>> returnComments() {
         return aiResponseWrapperMessage -> {
             log.info("Preparando envio dos comentários da IA para o VSC.");
-            // monta comentários com base na revisão da IA
-//            CommentTO comment = new CommentTO();
-//            comment.setLine(1);
-//            comment.setPath("file.md");
-//            comment.setMessage("Hey just testing!");
-//            comment.setPosition(1);
-            // Envia comentários para o sistema de versionamento de código
 
-            log.info("Comentários realizados!");
+            AIResponseWrapper aiResponseWrapper = aiResponseWrapperMessage.getPayload();
+            IVSCService ivscService = getIvscService(aiResponseWrapper.getVcs());
+            ivscService.comment(aiResponseWrapper);
+
             return MessageBuilder.withPayload(
                             ProcessStatusTO.builder()
                                     .pullRequestId(aiResponseWrapperMessage.getPayload().getPullRequestId())
@@ -75,7 +68,9 @@ public class ReviewerVCSBindings {
         };
     }
 
-    private @NotNull IVSCService getIvscService(RequestRevisionTO requestRevision) {
-        return applicationContext.getBean(requestRevision.getVcs().getService());
+    private @NotNull IVSCService getIvscService(VCSAvailableServicesEnum vcsAvailableServicesEnum) {
+        IVSCService ivscService = applicationContext.getBean(vcsAvailableServicesEnum.getService());
+        ivscService.validate();
+        return ivscService;
     }
 }
