@@ -1,6 +1,7 @@
 package com.nosbor.reviewer.api.services.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nosbor.reviewer.api.helpers.ValidationHelper;
 import com.nosbor.reviewer.api.models.AIResponseWrapper;
@@ -17,7 +18,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.nosbor.reviewer.api.models.AIAvailableServicesEnum.OLLAMA;
@@ -30,6 +30,7 @@ public class OllamaServiceImpl implements IAIService {
     private final WebClient client;
     private final String baseUrl;
     private final ObjectMapper objectMapper;
+
     public OllamaServiceImpl(@Value("${" + AI_SERVICES_OLLAMA_BASE_URL + ":}") String baseUrl,
                              ObjectMapper objectMapper) {
         this.baseUrl = baseUrl;
@@ -54,8 +55,10 @@ public class OllamaServiceImpl implements IAIService {
                 .map(OllamaResponseTO::getResponse)
                 .collect(Collectors.joining());
         String response = responseString.block();
-        AIResponseWrapper aiResponseWrapper = objectMapper.readValue(response, AIResponseWrapper.class);
-        aiResponseWrapper.setPullRequestId(pullRequestContextTO.getPullRequestId());
+        JsonNode jsonNode = objectMapper.readValue(response, JsonNode.class);
+        AIResponseWrapper aiResponseWrapper = objectMapper.convertValue(pullRequestContextTO, AIResponseWrapper.class);
+        aiResponseWrapper.setComments(objectMapper.convertValue(jsonNode.get("comments"), new TypeReference<>() {
+        }));
         log.info("Comentários gerados. Tamanho {}.", aiResponseWrapper.getComments().size());
         return aiResponseWrapper;
     }

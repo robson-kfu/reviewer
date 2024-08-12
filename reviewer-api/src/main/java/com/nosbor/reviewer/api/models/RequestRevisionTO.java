@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 public class RequestRevisionTO {
 
     @NotNull
-    private VCSAvailableServicesEnum vcs;
+    protected VCSAvailableServicesEnum vcs;
     @NotNull
-    private String pullRequestId;
+    protected String pullRequestId;
     @NotNull
-    private AIAvailableServicesEnum aiRevisor;
+    protected AIAvailableServicesEnum aiRevisor;
     @NotNull
-    private String owner;
+    protected String owner;
     @NotNull
-    private String repoName;
+    protected String repoName;
 }

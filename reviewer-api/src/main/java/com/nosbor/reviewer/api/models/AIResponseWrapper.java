@@ -1,15 +1,14 @@
 package com.nosbor.reviewer.api.models;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
-public class AIResponseWrapper {
-    @NotNull
-    private String pullRequestId;
-    List<CommentsTO> comments;
+public class AIResponseWrapper extends RequestRevisionTO {
+    List<CommentTO> comments;
 }

@@ -1,8 +1,9 @@
 package com.nosbor.reviewer.api.bindings;
 
-import com.nosbor.reviewer.api.models.*;
+import com.nosbor.reviewer.api.models.AIAvailableServicesEnum;
+import com.nosbor.reviewer.api.models.AIResponseWrapper;
+import com.nosbor.reviewer.api.models.PullRequestContextTO;
 import com.nosbor.reviewer.api.services.IAIService;
-import com.nosbor.reviewer.api.services.IVSCService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
@@ -11,7 +12,6 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -28,7 +28,7 @@ public class ReviewerAIBindings {
         return pullRequestContext -> {
             log.info("Requisitando analise da IA para o PR {}", pullRequestContext.getPayload().getPullRequestId());
             PullRequestContextTO pullRequestContextTO = pullRequestContext.getPayload();
-            IAIService aiService = getAiService(pullRequestContextTO.getAiAvailableServicesEnum());
+            IAIService aiService = getAiService(pullRequestContextTO.getAiRevisor());
             AIResponseWrapper aiReview = aiService.getAIReview(pullRequestContextTO);
 
             log.info("Processo de analise da IA finalizado.");
