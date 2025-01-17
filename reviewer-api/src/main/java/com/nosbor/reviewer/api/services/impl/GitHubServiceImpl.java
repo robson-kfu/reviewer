@@ -56,7 +56,12 @@ public class GitHubServiceImpl implements IVSCService {
     private final WebClient baseClient;
     private final WebClient apiClient;
 
-    public GitHubServiceImpl(@Value("${" + VCS_SERVICES_GITHUB_INSTALLATION_ID + ":}") String installationId, @Value("${" + VCS_SERVICES_GITHUB_APP_ID + ":}") String appId, @Value("${" + VCS_SERVICES_GITHUB_PEM_PATH + ":}") String pemPath, @Value("${" + VCS_SERVICES_GITHUB_BASE_URL + ":}") String baseUrl, @Value("${" + VCS_SERVICES_GITHUB_API_BASE_URL + ":}") String apiBaseUrl, @Value("${" + VCS_SERVICES_GITHUB_API_VERSION + ":}") String apiVersion) {
+    public GitHubServiceImpl(@Value("${" + VCS_SERVICES_GITHUB_INSTALLATION_ID + ":}") String installationId,
+                             @Value("${" + VCS_SERVICES_GITHUB_APP_ID + ":}") String appId,
+                             @Value("${" + VCS_SERVICES_GITHUB_PEM_PATH + ":}") String pemPath,
+                             @Value("${" + VCS_SERVICES_GITHUB_BASE_URL + ":}") String baseUrl,
+                             @Value("${" + VCS_SERVICES_GITHUB_API_BASE_URL + ":}") String apiBaseUrl,
+                             @Value("${" + VCS_SERVICES_GITHUB_API_VERSION + ":}") String apiVersion) {
         this.installationId = installationId;
         this.appId = appId;
         this.pemPath = pemPath;
@@ -73,8 +78,8 @@ public class GitHubServiceImpl implements IVSCService {
         log.info("Buscando informações do diff da PR");
         generateJWT();
         byte[] rawResponse = baseClient.get().uri(uriBuilder ->
-                uriBuilder.path("/raw/{owner}/{repo}/pull/{pull_number}.diff")
-                        .build(requestRevisionTO.getOwner(), requestRevisionTO.getRepoName(), requestRevisionTO.getPullRequestId()))
+                        uriBuilder.path("/raw/{owner}/{repo}/pull/{pull_number}.diff")
+                                .build(requestRevisionTO.getOwner(), requestRevisionTO.getRepoName(), requestRevisionTO.getPullRequestId()))
                 .header(AUTHORIZATION, String.format(BEARER_S, this.gitHubTokenTO.getToken())).retrieve().bodyToMono(byte[].class).block();
         Objects.requireNonNull(rawResponse);
         String diff = new String(rawResponse);
@@ -85,7 +90,14 @@ public class GitHubServiceImpl implements IVSCService {
     @Override
     public void validate() {
         log.info("Validando as configurações do git hub");
-        ValidationHelper.validate(Map.of(this.installationId, VCS_SERVICES_GITHUB_INSTALLATION_ID, this.baseUrl, VCS_SERVICES_GITHUB_BASE_URL, this.apiBaseUrl, VCS_SERVICES_GITHUB_API_BASE_URL, this.apiVersion, VCS_SERVICES_GITHUB_API_VERSION, this.appId, VCS_SERVICES_GITHUB_APP_ID, this.pemPath, VCS_SERVICES_GITHUB_PEM_PATH), GITHUB.toString());
+        ValidationHelper.validate(Map.of(
+                        this.installationId, VCS_SERVICES_GITHUB_INSTALLATION_ID,
+                        this.baseUrl, VCS_SERVICES_GITHUB_BASE_URL,
+                        this.apiBaseUrl, VCS_SERVICES_GITHUB_API_BASE_URL,
+                        this.apiVersion, VCS_SERVICES_GITHUB_API_VERSION,
+                        this.appId, VCS_SERVICES_GITHUB_APP_ID,
+                        this.pemPath, VCS_SERVICES_GITHUB_PEM_PATH),
+                GITHUB.toString());
         log.info("Configurações do git hub estão OK!");
     }
 
@@ -155,9 +167,23 @@ public class GitHubServiceImpl implements IVSCService {
         if (this.gitHubTokenTO == null || this.gitHubTokenTO.getExpiresAt().isBefore(Instant.now())) {
             log.info("Token é nulo ou expirado, renovando...");
             long now = System.currentTimeMillis();
-            String internalToken = Jwts.builder().issuer(String.valueOf(appId)).issuedAt(new Date(now)).expiration(new Date(now + EXPIRATION_TIME)).signWith(getPrivateKey(pemPath)).compact();
-            this.gitHubTokenTO = apiClient.post().uri(uriBuilder -> uriBuilder.path("/app/installations/{installation_id}/access_tokens").build(installationId)).header(AUTHORIZATION, String.format(BEARER_S, internalToken)).retrieve().bodyToMono(GitHubTokenTO.class).block();
+            String internalToken = Jwts
+                    .builder()
+                    .issuer(String.valueOf(appId))
+                    .issuedAt(new Date(now))
+                    .expiration(new Date(now + EXPIRATION_TIME))
+                    .signWith(getPrivateKey(pemPath)).compact();
+            apiClient
+                    .post()
+                    .uri(uriBuilder -> uriBuilder.path("/app/installations/{installation_id}/access_tokens")
+                            .build(installationId))
+                    .header(AUTHORIZATION, String.format(BEARER_S, internalToken))
+                    .retrieve()
+                    .bodyToMono(GitHubTokenTO.class)
+                    .subscribe(newGitHubTokenTO -> {
+                        this.gitHubTokenTO = newGitHubTokenTO;
+                        log.info("Token gerado {}", this.gitHubTokenTO);
+                    });
         }
-        log.info("Token gerado {}", this.gitHubTokenTO);
     }
 }
