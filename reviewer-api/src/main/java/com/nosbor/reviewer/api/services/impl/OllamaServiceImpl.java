@@ -59,7 +59,8 @@ public class OllamaServiceImpl implements IAIService {
         AIResponseWrapper aiResponseWrapper = objectMapper.convertValue(pullRequestContextTO, AIResponseWrapper.class);
         aiResponseWrapper.setComments(objectMapper.convertValue(jsonNode.get("comments"), new TypeReference<>() {
         }));
-        log.info("Comentários gerados. Tamanho {}.", aiResponseWrapper.getComments().size());
+        log.info("Comentários gerados. Tamanho {}.",
+                aiResponseWrapper.getComments().isEmpty() ? 0 : aiResponseWrapper.getComments().size());
         return aiResponseWrapper;
     }
 
@@ -77,7 +78,7 @@ public class OllamaServiceImpl implements IAIService {
                 {
                   "model": "phi3",
                   "format": "json",
-                  "prompt": "%s",
+                  "prompt": "Changes in code to analyse ```%s```",
                   "system": "%s",
                   "stream": true,
                   "options": {

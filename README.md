@@ -36,13 +36,15 @@ e um serviço de IA (como o Ollama).
 
 ## Uso
 
-### Endpoint para Analisar Pull Request
-
-- **Endpoint**: `/api/reviewer`
-- **Método**: `POST`
-- **Parâmetros**:
-    - `prId`: ID do pull request a ser analisado
-
-**Exemplo de Requisição**:
-```bash
-curl -X POST http://localhost:8080/api/analyze-pr -H "Content-Type: application/json" -d '{"prId": 123}'
+Exemplo de requisição:
+```shell
+    curl --location 'http://localhost:8080/reviewer' \
+    --header 'Content-Type: application/json' \
+    --data '{ 
+        "vcs": "GITHUB",
+        "pullRequestId": 1,
+        "aiRevisor": "OLLAMA",
+        "owner": "test",
+        "repoName": "test"
+    }'
+```
