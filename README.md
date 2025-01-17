@@ -48,3 +48,5 @@ Exemplo de requisição:
         "repoName": "test"
     }'
 ```
+Todas as APIs da aplicação podem ser visualizadas pelo swagger-ui.
+Link local: http://localhost:8080/swagger-ui/index.html#/
