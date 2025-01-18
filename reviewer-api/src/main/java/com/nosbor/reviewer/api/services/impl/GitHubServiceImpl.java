@@ -5,7 +5,7 @@ import com.nosbor.reviewer.api.helpers.ValidationHelper;
 import com.nosbor.reviewer.api.models.AIResponseWrapper;
 import com.nosbor.reviewer.api.models.CommentTO;
 import com.nosbor.reviewer.api.models.RequestRevisionTO;
-import com.nosbor.reviewer.api.services.IVSCService;
+import com.nosbor.reviewer.api.services.IVCSService;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringEscapeUtils;
@@ -33,7 +33,7 @@ import static com.nosbor.reviewer.api.models.VCSAvailableServicesEnum.GITHUB;
 
 @Service
 @Slf4j
-public class GitHubServiceImpl implements IVSCService {
+public class GitHubServiceImpl implements IVCSService {
 
     private static final long EXPIRATION_TIME = 600_000; // 10 minutes
     public static final String BEARER_S = "Bearer %s";
@@ -119,7 +119,7 @@ public class GitHubServiceImpl implements IVSCService {
                 .onStatus(HttpStatusCode::isError, ignorable ->
                         Mono.error(new RuntimeException("Erro ao processar entidade: " + commentBody)))
                 .toBodilessEntity()
-                .subscribe(Void -> log.info("Comentário realizado!"));
+                .subscribe(voidResponseEntity -> log.info("Comentário realizado!"));
     }
 
     private String commentBody(List<CommentTO> commentTOList) {

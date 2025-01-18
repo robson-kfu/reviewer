@@ -2,7 +2,7 @@ package com.nosbor.reviewer.api.bindings;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nosbor.reviewer.api.models.*;
-import com.nosbor.reviewer.api.services.IVSCService;
+import com.nosbor.reviewer.api.services.IVCSService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
@@ -31,17 +31,17 @@ public class ReviewerVCSBindings {
         return mergeRevision -> {
             log.info("Processando requisição de revisão de PR {}", mergeRevision);
             RequestRevisionTO requestRevision = mergeRevision.getPayload();
-            IVSCService ivscService = getIvscService(requestRevision.getVcs());
+            IVCSService iVCSService = getIvscService(requestRevision.getVcs());
             PullRequestContextTO context = objectMapper.convertValue(requestRevision, PullRequestContextTO.class);
 
             try {
-                context.setDiff(ivscService.getPullRequestDiff(requestRevision));
+                context.setDiff(iVCSService.getPullRequestDiff(requestRevision));
             } catch (Exception e) {
                 log.error("Erro buscando diff {}", e.getMessage());
                 //TODO - Escrever no topico de feedback?
                 throw new RuntimeException(e);
             }
-            context.setContext(ivscService.getPullRequestContext(requestRevision));
+            context.setContext(iVCSService.getPullRequestContext(requestRevision));
             log.info("Finalizando recuperação dos diffs.");
             return MessageBuilder.withPayload(context).copyHeaders(mergeRevision.getHeaders()).build();
         };
@@ -53,8 +53,8 @@ public class ReviewerVCSBindings {
             log.info("Preparando envio dos comentários da IA para o VSC.");
 
             AIResponseWrapper aiResponseWrapper = aiResponseWrapperMessage.getPayload();
-            IVSCService ivscService = getIvscService(aiResponseWrapper.getVcs());
-            ivscService.comment(aiResponseWrapper);
+            IVCSService iVCSService = getIvscService(aiResponseWrapper.getVcs());
+            iVCSService.comment(aiResponseWrapper);
 
             return MessageBuilder.withPayload(
                             ProcessStatusTO.builder()
@@ -68,9 +68,9 @@ public class ReviewerVCSBindings {
         };
     }
 
-    private @NotNull IVSCService getIvscService(VCSAvailableServicesEnum vcsAvailableServicesEnum) {
-        IVSCService ivscService = applicationContext.getBean(vcsAvailableServicesEnum.getService());
-        ivscService.validate();
-        return ivscService;
+    private @NotNull IVCSService getIvscService(VCSAvailableServicesEnum vcsAvailableServicesEnum) {
+        IVCSService iVCSService = applicationContext.getBean(vcsAvailableServicesEnum.getService());
+        iVCSService.validate();
+        return iVCSService;
     }
 }
