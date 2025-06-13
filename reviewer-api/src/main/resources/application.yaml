@@ -71,6 +71,10 @@ vcs:
       pemPath: ${PEM_PATH}
 
 ai:
-  services:
+  service:
+    active: gemini
     ollama:
       baseUrl: ${OLLAMA_BASE_URL:http://localhost:11434/api}
+    gemini:
+      baseUrl: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta/gemini-2.5-pro-preview-06-05}
+      key: ${GEMINI_KEY}

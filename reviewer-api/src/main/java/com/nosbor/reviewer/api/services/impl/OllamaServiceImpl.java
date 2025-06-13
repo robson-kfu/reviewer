@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -20,13 +21,18 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.nosbor.reviewer.api.helpers.Constants.SYSTEM_INSTRUCTIONS;
 import static com.nosbor.reviewer.api.models.AIAvailableServicesEnum.OLLAMA;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(
+        name = "ai.service.active",
+        havingValue = "ollama"
+)
 public class OllamaServiceImpl implements IAIService {
 
-    public static final String AI_SERVICES_OLLAMA_BASE_URL = "ai.services.ollama.baseUrl";
+    public static final String AI_SERVICES_OLLAMA_BASE_URL = "ai.service.ollama.baseUrl";
     private final WebClient client;
     private final String baseUrl;
     private final ObjectMapper objectMapper;
@@ -86,7 +92,7 @@ public class OllamaServiceImpl implements IAIService {
                              }
                 }
                 """
-                .formatted(StringEscapeUtils.escapeJson(diff), StringEscapeUtils.escapeJson(getSystemMessage()));
+                .formatted(StringEscapeUtils.escapeJson(diff), StringEscapeUtils.escapeJson(SYSTEM_INSTRUCTIONS));
     }
 
 

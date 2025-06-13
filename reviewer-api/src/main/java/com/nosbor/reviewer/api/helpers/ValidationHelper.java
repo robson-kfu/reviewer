@@ -2,6 +2,7 @@ package com.nosbor.reviewer.api.helpers;
 
 import org.apache.logging.log4j.util.Strings;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,7 @@ public class ValidationHelper {
         properties
                 .forEach((key, value) -> validateProperty(key, value, service, errorsMsg));
         if (!errorsMsg.isEmpty()) {
-            throw new RuntimeException(errorsMsg.toString());
+            throw new InvalidParameterException(errorsMsg.toString());
         }
     }
 
