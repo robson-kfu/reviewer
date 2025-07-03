@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class CommentTO {
-    private Integer line;
+    private String path;
+    private Integer position;
     private String comment;
 }

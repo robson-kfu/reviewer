@@ -27,12 +27,12 @@ import static com.nosbor.reviewer.api.models.AIAvailableServicesEnum.OLLAMA;
 @Service
 @Slf4j
 @ConditionalOnProperty(
-        name = "ai.service.active",
-        havingValue = "ollama"
+        name = "ai.services.ollama.active",
+        havingValue = "true"
 )
 public class OllamaServiceImpl implements IAIService {
 
-    public static final String AI_SERVICES_OLLAMA_BASE_URL = "ai.service.ollama.baseUrl";
+    public static final String AI_SERVICES_OLLAMA_BASE_URL = "ai.services.ollama.baseUrl";
     private final WebClient client;
     private final String baseUrl;
     private final ObjectMapper objectMapper;

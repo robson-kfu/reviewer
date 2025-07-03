@@ -3,6 +3,7 @@ package com.nosbor.reviewer.api.bindings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nosbor.reviewer.api.models.*;
 import com.nosbor.reviewer.api.services.IVCSService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
@@ -26,6 +27,7 @@ public class ReviewerVCSBindings {
         this.objectMapper = objectMapper;
     }
 
+    @SneakyThrows
     @Bean
     Function<Message<RequestRevisionTO>, Message<PullRequestContextTO>> requestContext() {
         return mergeRevision -> {
@@ -34,13 +36,8 @@ public class ReviewerVCSBindings {
             IVCSService iVCSService = getIvscService(requestRevision.getVcs());
             PullRequestContextTO context = objectMapper.convertValue(requestRevision, PullRequestContextTO.class);
 
-            try {
-                context.setDiff(iVCSService.getPullRequestDiff(requestRevision));
-            } catch (Exception e) {
-                log.error("Erro buscando diff {}", e.getMessage());
-                //TODO - Escrever no topico de feedback?
-                throw new RuntimeException(e);
-            }
+            context.setDiff(iVCSService.getPullRequestDiff(requestRevision));
+
             context.setContext(iVCSService.getPullRequestContext(requestRevision));
             log.info("Finalizando recuperação dos diffs.");
             return MessageBuilder.withPayload(context).copyHeaders(mergeRevision.getHeaders()).build();

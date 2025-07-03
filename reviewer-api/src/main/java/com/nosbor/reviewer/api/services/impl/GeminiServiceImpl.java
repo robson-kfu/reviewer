@@ -3,9 +3,8 @@ package com.nosbor.reviewer.api.services.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nosbor.reviewer.api.helpers.ValidationHelper;
 import com.nosbor.reviewer.api.models.AIResponseWrapper;
-import com.nosbor.reviewer.api.models.OllamaResponseTO;
+import com.nosbor.reviewer.api.models.GeminiResponseTO;
 import com.nosbor.reviewer.api.models.PullRequestContextTO;
 import com.nosbor.reviewer.api.services.IAIService;
 import lombok.SneakyThrows;
@@ -18,18 +17,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.nosbor.reviewer.api.helpers.Constants.COMMENTS;
 import static com.nosbor.reviewer.api.helpers.Constants.SYSTEM_INSTRUCTIONS;
-import static com.nosbor.reviewer.api.models.AIAvailableServicesEnum.OLLAMA;
 
 @Service
 @Slf4j
 @ConditionalOnProperty(
-        name = "ai.service.active",
-        havingValue = "gemini"
+        name = "ai.services.gemini.active",
+        havingValue = "true"
 )
 public class GeminiServiceImpl implements IAIService {
 
@@ -37,8 +35,8 @@ public class GeminiServiceImpl implements IAIService {
     private final WebClient client;
     private final String geminiKey;
 
-    public GeminiServiceImpl(@Value("${ai.service.gemini.baseUrl}") String baseUrl,
-                             @Value("${ai.service.gemini.key}") String key,
+    public GeminiServiceImpl(@Value("${ai.services.gemini.baseUrl}") String baseUrl,
+                             @Value("${ai.services.gemini.key}") String key,
                              ObjectMapper objectMapper) {
         this.client = WebClient.builder()
                 .baseUrl(baseUrl)
@@ -59,10 +57,13 @@ public class GeminiServiceImpl implements IAIService {
                 .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(body(pullRequestContextTO.getDiff()))
                 .retrieve()
-                .bodyToFlux(OllamaResponseTO.class)
-                .map(OllamaResponseTO::getResponse)
+                .bodyToFlux(GeminiResponseTO.class)
+                .map(response -> response.getFirstCandidateText().orElse("No Response!"))
                 .collect(Collectors.joining());
-        String response = responseString.block();
+        String response = Objects.requireNonNull(responseString.block())
+                .replace("```", "")
+                .replace("json\n", "");
+        log.debug("Response: {}", response);
         JsonNode jsonNode = objectMapper.readValue(response, JsonNode.class);
         AIResponseWrapper aiResponseWrapper = objectMapper.convertValue(pullRequestContextTO, AIResponseWrapper.class);
         aiResponseWrapper.setComments(objectMapper.convertValue(jsonNode.get(COMMENTS), new TypeReference<>() {
@@ -79,7 +80,7 @@ public class GeminiServiceImpl implements IAIService {
 
     @Override
     public void validate() {
-       // Do nothing
+        // Do nothing
     }
 
     private static String body(String diff) {

@@ -74,7 +74,7 @@ public class GitHubServiceImpl implements IVCSService {
     }
 
     @Override
-    public String getPullRequestDiff(RequestRevisionTO requestRevisionTO) throws Exception {
+    public String getPullRequestDiff(RequestRevisionTO requestRevisionTO) {
         log.info("Buscando informações do diff da PR");
         generateJWT();
         byte[] rawResponse = baseClient.get().uri(uriBuilder ->
@@ -105,6 +105,7 @@ public class GitHubServiceImpl implements IVCSService {
     public void comment(AIResponseWrapper aiResponseWrapper) {
         log.info("Enviando comentário para o GitHub");
         String commentBody = commentBody(aiResponseWrapper.getComments());
+        log.info("Body a ser enviado: {}", commentBody);
         apiClient
                 .post()
                 .uri(uriBuilder ->
@@ -118,8 +119,8 @@ public class GitHubServiceImpl implements IVCSService {
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, ignorable ->
                         Mono.error(new RuntimeException("Erro ao processar entidade: " + commentBody)))
-                .toBodilessEntity()
-                .subscribe(voidResponseEntity -> log.info("Comentário realizado!"));
+                .toEntity(String.class)
+                .subscribe(response -> log.info("Comentário realizado!. Retorno: {}", response));
     }
 
     private String commentBody(List<CommentTO> commentTOList) {
@@ -134,7 +135,7 @@ public class GitHubServiceImpl implements IVCSService {
                 """
                 .formatted(commentTOList
                         .parallelStream()
-                        .filter(commentTO -> commentTO.getLine() != null)
+                        .filter(commentTO -> commentTO.getPosition() != null)
                         .map(this::comment)
                         .collect(Collectors.joining(", "))
                 );
@@ -143,26 +144,34 @@ public class GitHubServiceImpl implements IVCSService {
     private String comment(CommentTO commentTO) {
         return """
                 {
-                     "path": "README.md",
+                     "path": "%s",
                      "position": %s,
                      "body": "%s"
                  }
                 """
-                .formatted(commentTO.getLine(), StringEscapeUtils.escapeJson(commentTO.getComment()));
+                .formatted(commentTO.getPath(), commentTO.getPosition(),
+                        StringEscapeUtils.escapeJson(commentTO.getComment()));
     }
 
-    private static PrivateKey getPrivateKey(String filename) throws Exception {
-        PemReader pemReader = new PemReader(Files.newBufferedReader(Paths.get(filename)));
-        PemObject pemObject = pemReader.readPemObject();
-        byte[] content = pemObject.getContent();
-        pemReader.close();
+    private static PrivateKey getPrivateKey(String filename) {
 
-        PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(content);
-        KeyFactory kf = KeyFactory.getInstance("RSA");
-        return kf.generatePrivate(keySpec);
+        try {
+            PemReader pemReader = new PemReader(Files.newBufferedReader(Paths.get(filename)));
+
+            PemObject pemObject = pemReader.readPemObject();
+            byte[] content = pemObject.getContent();
+            pemReader.close();
+
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(content);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            return kf.generatePrivate(keySpec);
+        } catch (Exception e) {
+            log.error("Error parsing gitHub credentials", e);
+        }
+        return null;
     }
 
-    private void generateJWT() throws Exception {
+    private void generateJWT() {
         log.info("Gerando token...");
         if (this.gitHubTokenTO == null || this.gitHubTokenTO.getExpiresAt().isBefore(Instant.now())) {
             log.info("Token é nulo ou expirado, renovando...");
